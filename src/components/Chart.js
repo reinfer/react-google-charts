@@ -141,11 +141,18 @@ export default class Chart extends React.Component {
       dataTable.addColumn(column);
     });
     dataTable.addRows(this.props.rows);
+
     if (this.props.numberFormat) {
-      const formatter = new window.google.visualization.NumberFormat(
-        this.props.numberFormat.options
-      );
-      formatter.format(dataTable, this.props.numberFormat.column);
+      const numberFormatters = this.props.numberFormat instanceof Array
+        ? this.props.numberFormat
+        : [this.props.numberFormat];
+
+      for (const numberFormat of numberFormatters) {
+        const formatter = new window.google.visualization.NumberFormat(
+          numberFormat.options
+        );
+        formatter.format(dataTable, numberFormat.column);
+      }
     }
 
     if (this.props.dateFormat) {
@@ -350,6 +357,20 @@ export default class Chart extends React.Component {
   }
 }
 
+const NUMBER_FORMAT_PROP_TYPE = React.PropTypes.shape({
+  column: React.PropTypes.number, // eslint-disable-line react/no-unused-prop-types
+  options: React.PropTypes.shape({
+    decimalSymbol: React.PropTypes.string,  // eslint-disable-line react/no-unused-prop-types
+    fractionDigits: React.PropTypes.number, // eslint-disable-line react/no-unused-prop-types
+    groupingSymbol: React.PropTypes.string, // eslint-disable-line react/no-unused-prop-types
+    negativeColor: React.PropTypes.string, // eslint-disable-line react/no-unused-prop-types
+    negativeParens: React.PropTypes.bool, // eslint-disable-line react/no-unused-prop-types
+    pattern: React.PropTypes.string, // eslint-disable-line react/no-unused-prop-types
+    prefix: React.PropTypes.string, // eslint-disable-line react/no-unused-prop-types
+    suffix: React.PropTypes.string, // eslint-disable-line react/no-unused-prop-types
+  }),
+});
+
 Chart.propTypes = {
   graph_id: React.PropTypes.string,
   chartType: React.PropTypes.string,
@@ -375,19 +396,10 @@ Chart.propTypes = {
   allowEmptyRows: React.PropTypes.bool,
   chartPackages: React.PropTypes.arrayOf(React.PropTypes.string),
   chartVersion: React.PropTypes.string,
-  numberFormat: React.PropTypes.shape({
-    column: React.PropTypes.number, // eslint-disable-line react/no-unused-prop-types
-    options: React.PropTypes.shape({
-      decimalSymbol: React.PropTypes.string,  // eslint-disable-line react/no-unused-prop-types
-      fractionDigits: React.PropTypes.number, // eslint-disable-line react/no-unused-prop-types
-      groupingSymbol: React.PropTypes.string, // eslint-disable-line react/no-unused-prop-types
-      negativeColor: React.PropTypes.string, // eslint-disable-line react/no-unused-prop-types
-      negativeParens: React.PropTypes.bool, // eslint-disable-line react/no-unused-prop-types
-      pattern: React.PropTypes.string, // eslint-disable-line react/no-unused-prop-types
-      prefix: React.PropTypes.string, // eslint-disable-line react/no-unused-prop-types
-      suffix: React.PropTypes.string, // eslint-disable-line react/no-unused-prop-types
-    }),
-  }),
+  numberFormat: React.PropTypes.oneOfType([
+    NUMBER_FORMAT_PROP_TYPE,
+    React.PropTypes.arrayOf(NUMBER_FORMAT_PROP_TYPE),
+  ]),
   dateFormat: React.PropTypes.shape({
     // eslint-disable-next-line react/no-unused-prop-types
     columns: React.PropTypes.arrayOf(React.PropTypes.number),
